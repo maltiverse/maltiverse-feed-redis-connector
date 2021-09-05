@@ -22,15 +22,15 @@ parser.add_argument('--maltiverse_password', dest='maltiverse_password', require
 parser.add_argument('--feed', dest='maltiverse_feed', required=True,
                     help='Specifies Maltiverse Feed ID to retrieve. Required')
 parser.add_argument('--range', dest='maltiverse_range', default=None,
-                    help='Specifies Feed time range. Examples now-1h, now-1W, now-1m')
+                    help='Specifies Feed time range. Examples now-1h, now-1w, now-1M')
 parser.add_argument('--range_field', dest='maltiverse_range_field', default="modification_time",
-                    help='Specifies the datetime field to apply filtering range. Available options are creation_time and modification_time')
+                    help="Specifies the datetime field to apply filtering range ('creation_time'|'modification_time'). Default 'modification_time'")
 parser.add_argument('--feed-expiration-days', dest='maltiverse_feed_expiration_days', default=30,
-                    help='Specifies Maltiverse Feed ID to retrieve. Required')
+                    help="Specifies the default expiration time in days for the indicators of the selected collection. Default '30'")
 parser.add_argument('--redis_host', dest='redis_host', default="localhost",
-                    help='Specifies Redis database destination hostname. Default localhost')
+                    help="Specifies Redis database destination hostname. Default 'localhost'")
 parser.add_argument('--redis_port', dest='redis_port', default=6379,
-                    help='Specifies Redis database destination hostname port. Default 6379')
+                    help="Specifies Redis database destination hostname port. Default '6379'")
 parser.add_argument('--redis_password', dest='redis_password', default=None,
                     help='Specifies Redis database destination password.')
 
