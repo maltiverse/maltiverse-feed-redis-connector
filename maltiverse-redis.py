@@ -33,7 +33,14 @@ parser.add_argument('--redis_port', dest='redis_port', default=6379,
                     help="Specifies Redis database destination hostname port. Default '6379'")
 parser.add_argument('--redis_password', dest='redis_password', default=None,
                     help='Specifies Redis database destination password.')
-
+parser.add_argument('--redis_database_ipv4', dest='redis_database_ipv4', default=0,
+                    help='Specifies Redis database index for IPv4.')
+parser.add_argument('--redis_database_hostname', dest='redis_database_hostname', default=0,
+                    help='Specifies Redis database index for Hostnames.')
+parser.add_argument('--redis_database_url', dest='redis_database_url', default=0,
+                    help='Specifies Redis database index for URL.')
+parser.add_argument('--redis_database_sample', dest='redis_database_sample', default=0,
+                    help='Specifies Redis database index for Samples.')
 arguments = parser.parse_args()
 
 # Script options
@@ -51,10 +58,29 @@ session.headers = {
 
 HEADERS = None
 
-r = redis.Redis(
+r_ipv4 = redis.Redis(
     host=arguments.redis_host,
     port=arguments.redis_port, 
-    password=arguments.redis_password)
+    password=arguments.redis_password,
+    db=arguments.redis_database_ipv4)
+
+r_hostname = redis.Redis(
+    host=arguments.redis_host,
+    port=arguments.redis_port, 
+    password=arguments.redis_password,
+    db=arguments.redis_database_hostname)
+
+r_url = redis.Redis(
+    host=arguments.redis_host,
+    port=arguments.redis_port, 
+    password=arguments.redis_password,
+    db=arguments.redis_database_url)
+
+r_sample = redis.Redis(
+    host=arguments.redis_host,
+    port=arguments.redis_port, 
+    password=arguments.redis_password,
+    db=arguments.redis_database_sample)
 
 COUNT_IP = 0
 COUNT_HOSTNAME = 0
@@ -110,24 +136,28 @@ for element in json.loads(DATA.text):
 
     if diff_seconds > 0:
         if element['type'] == 'ip':
-            if r.set(element['ip_addr'], str(element), ex=int(diff_seconds)):
+            if r_ipv4.set(element['ip_addr'], str(element), ex=int(diff_seconds)):
                 print("Inserted: " + element['ip_addr'])
                 COUNT_IP += 1
         if element['type'] == 'hostname':
-            if r.set(element['hostname'], str(element), ex=int(diff_seconds)):
+            if r_hostname.set(element['hostname'], str(element), ex=int(diff_seconds)):
                 print("Inserted: " + element['hostname'])
                 COUNT_HOSTNAME += 1
         if element['type'] == 'url':
-            if r.set(element['url'], str(element), ex=int(diff_seconds)):
+            if r_url.set(element['url'], str(element), ex=int(diff_seconds)):
                 print("Inserted: " + element['url'])
+                if 'ip_addr' in element:
+                    if r_ipv4.set(element['ip_addr'], str(element), ex=int(diff_seconds)):
+                        print("Inserted: " + element['ip_addr'])
+                        COUNT_IP += 1
                 COUNT_URL += 1
         if element['type'] == 'sample':
-            if r.set(element['sha256'], str(element), ex=int(diff_seconds)):
+            if r_sample.set(element['sha256'], str(element), ex=int(diff_seconds)):
                 print("Inserted: " + element['sha256'])
                 COUNT_SAMPLE += 1
 
-print("IPs Added: " + str(COUNT_IP))
-print("Hostnames Added: " + str(COUNT_HOSTNAME))
-print("URLs Added: " + str(COUNT_URL))
-print("SHA256 Added: " + str(COUNT_SAMPLE))
+print("IPs Inserted        : " + str(COUNT_IP))
+print("Hostnames Inserted  : " + str(COUNT_HOSTNAME))
+print("URLs Inserted       : " + str(COUNT_URL))
+print("SHA256 Inserted     : " + str(COUNT_SAMPLE))
 print("Feed successfully processed: " + COLL_OBJ['name'])
