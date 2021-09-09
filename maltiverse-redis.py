@@ -41,6 +41,8 @@ parser.add_argument('--redis_database_url', dest='redis_database_url', default=0
                     help='Specifies Redis database index for URL.')
 parser.add_argument('--redis_database_sample', dest='redis_database_sample', default=0,
                     help='Specifies Redis database index for Samples.')
+parser.add_argument('--verbose', dest='verbose', action="store_true", default=False,
+                    help='Shows extra information during ingestion')
 arguments = parser.parse_args()
 
 # Script options
@@ -137,27 +139,37 @@ for element in json.loads(DATA.text):
     if diff_seconds > 0:
         if element['type'] == 'ip':
             if r_ipv4.set(element['ip_addr'], str(element), ex=int(diff_seconds)):
-                print("Inserted: " + element['ip_addr'])
                 COUNT_IP += 1
+                if arguments.verbose:
+                    print("Inserted: " + element['ip_addr'])
+
         if element['type'] == 'hostname':
             if r_hostname.set(element['hostname'], str(element), ex=int(diff_seconds)):
-                print("Inserted: " + element['hostname'])
-                COUNT_HOSTNAME += 1
+                COUNT_URL += 1
+                if arguments.verbose:
+                    print("Inserted: " + element['hostname'])
+
         if element['type'] == 'url':
             if r_url.set(element['url'], str(element), ex=int(diff_seconds)):
-                print("Inserted: " + element['url'])
+                COUNT_URL += 1
+                if arguments.verbose:
+                    print("Inserted: " + element['url'])
                 if 'ip_addr' in element:
                     if r_ipv4.set(element['ip_addr'], str(element), ex=int(diff_seconds)):
-                        print("Inserted: " + element['ip_addr'])
                         COUNT_IP += 1
-                COUNT_URL += 1
+                        if arguments.verbose:
+                            print("Inserted: " + element['ip_addr'])
+
         if element['type'] == 'sample':
             if r_sample.set(element['sha256'], str(element), ex=int(diff_seconds)):
-                print("Inserted: " + element['sha256'])
                 COUNT_SAMPLE += 1
+                if arguments.verbose:
+                    print("Inserted: " + element['sha256'])
 
 print("IPs Inserted        : " + str(COUNT_IP))
 print("Hostnames Inserted  : " + str(COUNT_HOSTNAME))
 print("URLs Inserted       : " + str(COUNT_URL))
 print("SHA256 Inserted     : " + str(COUNT_SAMPLE))
-print("Feed successfully processed: " + COLL_OBJ['name'])
+print("PROCESSED           : " + COLL_OBJ['name'])
+print("###########################################")
+print("")
