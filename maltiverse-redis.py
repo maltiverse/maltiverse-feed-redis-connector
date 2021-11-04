@@ -154,11 +154,6 @@ for element in json.loads(DATA.text):
                 COUNT_URL += 1
                 if arguments.verbose:
                     print("Inserted: " + element['url'])
-                if 'ip_addr' in element:
-                    if r_ipv4.set(element['ip_addr'], str(element), ex=int(diff_seconds)):
-                        COUNT_IP += 1
-                        if arguments.verbose:
-                            print("Inserted: " + element['ip_addr'])
 
         if element['type'] == 'sample':
             if r_sample.set(element['sha256'], str(element), ex=int(diff_seconds)):
